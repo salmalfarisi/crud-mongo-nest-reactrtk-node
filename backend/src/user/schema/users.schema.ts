@@ -31,6 +31,9 @@ export class Users {
   
   @Prop({ type: Date })
   updatedAt: Date;
+  
+  @Prop({ type: Boolean })
+  active: Boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(Users);

@@ -12,8 +12,7 @@ import {
 } from 'class-validator';
 
 export class CreateUsersDto {
-    @IsOptional()
-	_id: string;
+    _id: mongoose.Types.ObjectId;
 	
 	@IsString()
 	@IsNotEmpty()
@@ -34,9 +33,18 @@ export class CreateUsersDto {
 	
 	@IsEmpty()
 	token: string;
+	
+	@IsEmpty()
 	tokenexpired: Date;
+	
+	@IsEmpty()
 	createdAt: Date;
+	@IsEmpty()
 	updatedAt: Date;
+	
+	@IsOptional()
+	@IsBoolean()
+	active: Boolean;
 }
 
 export class LoginDTO {

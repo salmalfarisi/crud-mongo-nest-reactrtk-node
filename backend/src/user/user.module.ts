@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
+import { AuthService } from './auth.service';
 import { UserController } from './user.controller';
 import { UtilityModule } from '../utility/utility.module';
 import { ConfigModule } from '@nestjs/config';
@@ -14,10 +15,12 @@ import { JwtModule } from '@nestjs/jwt';
 	JwtModule.register({
 		secret: process.env.KEYGEN,
 		signOptions: { expiresIn: '46800s' },
+		// signOptions: { expiresIn: '10s' },
 	}),
 	UtilityModule,
   ],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, AuthService],
+  exports: [AuthService]
 })
 export class UserModule {}
