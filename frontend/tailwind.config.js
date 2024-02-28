@@ -1,28 +1,35 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-	content: [
-	"./src/**/*.{js,jsx,ts,tsx}",
-	],
-	theme: {
-		extend: {
-			colors:{
-				'young-blue': {
-					'DEFAULT': '#AAD7D9',
-					'50': '#E8F5F2',
-					'100': '#DFF1EE',
-					'200': '#CDE9E7',
-					'300': '#BCE1E0',
-					'400': '#AAD7D9',
-					'500': '#8AC4CB',
-					'600': '#6BAFBD',
-					'700': '#4D97AC',
-					'800': '#3F768D',
-					'900': '#31586D',
-					'950': '#2A495D'
-				},
-			}
+  content: [
+	"./src/**/*.{html,js,vue}"
+  ],
+  theme: {
+    extend: {
+		colors:{
+			'minceraft': {
+				'50': '#f7f7f7',
+				'100': '#ededed',
+				'200': '#dfdfdf',
+				'300': '#c8c8c8',
+				'400': '#aaaaaa',
+				'500': '#999999',
+				'600': '#888888',
+				'700': '#7b7b7b',
+				'800': '#676767',
+				'900': '#545454',
+				'950': '#363636',
+			},
 		},
+		fontFamily: {
+		  //bodoni: ["Bodoni Moda", "sans-serif"],
+		  // gilroy: ["Gilroy-Bold", "sans-serif"],
+		  // gabriel: ["Gabriela Smithasa"],
+		  micro5: ['"Micro 5"', '"sans-serif"'],
+		  ente: ['"Anta"', '"sans-serif"'],
+		  minceraft: ['"Minecraft"', '"sans-serif"'],
+		  gta: ['"Pricedown Bl"', '"sans-serif"'],
+		}
 	},
-	plugins: [],
+  },
+  plugins: [],
 }
-
