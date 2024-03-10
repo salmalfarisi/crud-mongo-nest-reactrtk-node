@@ -1,0 +1,43 @@
+export default {
+	state:
+	{
+		user:
+		{
+			
+		},
+		data:
+		[
+			
+		],
+		token:"",
+		urlBE:"http://localhost:3500/api/",
+		setUserRegistration:
+		{
+			name:'',
+			username:'',
+			email:'',
+			password:'',
+			Rpassword:''
+		},
+		setErrorUserRegistration:
+		{
+			name:[],
+			username:[],
+			email:[],
+			password:[],
+			Rpassword:'',
+		},
+		setCRUD:
+		{
+			_id:'',
+			title:'',
+			description:'',
+			is_delete:'',
+		},
+		setErrorCRUD:
+		{
+			title:[],
+			description:[],
+		}
+	}
+}

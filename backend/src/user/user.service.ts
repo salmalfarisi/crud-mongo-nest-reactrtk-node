@@ -123,5 +123,36 @@ export class UserService {
 		return await this.userMM.updateOne({ id: id }, data).exec();
 	}
 	
+	async checkExist(username: string, email: string)
+	{
+		var total = await this.userMM.count(
+			{
+				"$or":
+				[
+					{
+						username: username
+					},
+					{
+						email: email
+					},
+				]
+			}
+		);
+		
+		if(total == 0)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 	
+	async detailByToken(token:string)
+	{
+		var data = await this.userMM.findOne({ token:token }, { _id:1, email:1, name:1, username:1 });
+		
+		return data;
+	}
 }

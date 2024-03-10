@@ -1,4 +1,4 @@
-# frontend
+# belajar-vuex-ecommerce
 
 ## Project setup
 ```

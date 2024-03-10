@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { InjectModel, InjectConnection } from '@nestjs/mongoose';
 import { Model, ObjectId, Types } from 'mongoose';
 import { UserSchema, Users, UsersDocument } from './schema/users.schema';
@@ -24,16 +24,31 @@ export class AuthService{
 		//console.log(decrypt.exp);
 		try
 		{
-			var decrypt = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+			var decrypt = null;
+			try
+			{
+				decrypt = await this.jwtService.verifyAsync(
+					token.split(' ')[1],
+					{
+					  secret: process.env.KEYGEN
+					}
+				);
+			}
+			catch(e)
+			{
+				console.log(e);
+			}
+			
+			if(decrypt == null)
+			{
+				throw new UnauthorizedException('Wrong Token');
+			}
 			
 			var cekdata = await this.userMM.findOne(
 				{
-					username: decrypt.username,
+					token: token,
 				}
 			).exec();
-			
-			console.log(decrypt);
-			console.log(cekdata);
 			
 			//error handling bermasalah. cek lagi nanti
 			if(cekdata == null)
@@ -50,7 +65,7 @@ export class AuthService{
 					var selisih = decrypt.exp - convertunix;
 					
 					var tokentime = new Date(decrypt.exp * 1000);
-					var formattoken = tokentime.getFullYear() + "-" + tokentime.getMonth() + "-" + tokentime.getDate() + " " + tokentime.getHours() + ":" + tokentime.getMinutes() + ":" + tokentime.getSeconds();
+					var formattoken = tokentime.getFullYear() + " " + tokentime.getMonth() + " " + tokentime.getDate() + " " + tokentime.getHours() + ":" + tokentime.getMinutes() + ":" + tokentime.getSeconds();
 					if(selisih < 0)
 					{
 						// await this.logout(token);
@@ -88,7 +103,7 @@ export class AuthService{
 		
 		if(cekdata == null)
 		{
-			throw new UnauthorizedException('user not found');
+			throw new BadRequestException('user not found');
 		}
 		else
 		{
@@ -108,7 +123,7 @@ export class AuthService{
 				var decodejwt = await this.jwtService.decode(result);
 				
 				var tokentime = new Date(decodejwt['exp'] * 1000);
-				var formattoken = tokentime.getFullYear() + "-" + tokentime.getMonth() + "-" + tokentime.getDate() + " " + tokentime.getHours() + ":" + tokentime.getMinutes() + ":" + tokentime.getSeconds();
+				var formattoken = tokentime.getFullYear() + " " + tokentime.getMonth() + " " + tokentime.getDate() + " " + tokentime.getHours() + ":" + tokentime.getMinutes() + ":" + tokentime.getSeconds();
 
 				var updatedata = await this.userMM.updateOne(
 					{
@@ -149,5 +164,51 @@ export class AuthService{
 		).limit(1).exec();
 		
 		return true;
+	}
+	
+	async refreshToken(token:string)
+	{
+		var cekdata = await this.userMM.findOne(
+			{
+				token: token,
+			}
+		).exec();
+		
+		if(cekdata != null || cekdata != undefined)
+		{
+			const payload = { username: cekdata.username, sub: cekdata._id };
+			var result = await this.jwtService.sign(payload);
+			//console.log(result);
+			var outputdata = {
+				'username':cekdata.username,
+				'email':cekdata.email,
+				'name':cekdata.name,
+				'token': 'Bearer ' + result
+			};
+
+			var decodejwt = await this.jwtService.decode(result);
+			
+			var tokentime = new Date(decodejwt['exp'] * 1000);
+			var formattoken = tokentime.getFullYear() + " " + tokentime.getMonth() + " " + tokentime.getDate() + " " + tokentime.getHours() + ":" + tokentime.getMinutes() + ":" + tokentime.getSeconds();
+
+			var updatedata = await this.userMM.updateOne(
+				{
+					"_id":cekdata._id
+				},
+				{
+					"$set":
+					{
+						"token":"Bearer " + result,
+						"tokenexpired": formattoken
+					}
+				}
+			).exec();
+			
+			return outputdata;
+		}
+		else
+		{
+			return false
+		}
 	}
 }

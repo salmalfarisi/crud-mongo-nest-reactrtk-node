@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Res, HttpStatus, Response, Request, Req, BadRequestException, Headers, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Res, HttpStatus, Response, Request, Req, BadRequestException, NotAcceptableException, Headers, UnauthorizedException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AuthService } from './auth.service';
 import { CreateUsersDto } from './dto/users.dto';
@@ -16,8 +16,15 @@ export class UserController {
 
   @Post('registration')
   async create(@Body() data: CreateUsersDto) {
-    var result = await this.userSS.create(data);
-	
+	data.username = data.username.toLowerCase();
+	data.email = data.email.toLowerCase();
+	var checkexist = await this.userSS.checkExist(data.username, data.email);
+	if(checkexist == false)
+	{
+		throw new NotAcceptableException('username or email already created in database');
+	}
+  
+    var result = true;//await this.userSS.create(data);
 	return {
 		response:202,
 		data:result
@@ -25,9 +32,14 @@ export class UserController {
   }
   
   @Post('login')
-  async login(@Body() data: LoginDTO) {
+  async login(@Body() data: LoginDTO, @Res({ passthrough:true }) res) {
     var result = await this.authSS.login(data);
+	if(result == false)
+	{
+		throw new BadRequestException('Username or Password not correct');
+	}
 	
+	res.cookie('token', result.token);
 	return {
 		response:202,
 		data:result
@@ -35,19 +47,52 @@ export class UserController {
   }
   
   @Get('logout')
-  async logout(@Headers() headers){
-	var token = headers['authorization'];
-	var result = await this.authSS.authentication(token);
-	if(result == true)
-	{
-		// await this.authSS.logout(token);
-		return {
-			"message":"Successfully Logout"
-		};
+  async logout(@Headers() headers, @Req() req){
+	await this.authSS.authentication(req.cookies.token);
+	return {
+		response: 202,
+		message:"Successfully Logout"
+	};
+  }
+  
+  @Get('RefreshToken')
+  async refreshToken(@Req() req, @Res({ passthrough:true }) res)
+  {
+	var result = await this.authSS.refreshToken(req.cookies.token);
+	if(result == false)
+	{	
+		throw new UnauthorizedException('Unauthorize. Login again');
 	}
 	else
 	{
-		throw new UnauthorizedException('Cannot Logout account');
+		res.cookie('token', result.token);
+		return {
+			response: 202,
+			data:result
+		}
 	}
   }
+  
+  @Get('detail')
+  async detailByToken(@Req() req, @Res({ passthrough:true }) res)
+  {
+	console.log(await this.utilSS.setDatenow());
+	await this.authSS.authentication(req.cookies.token);
+	var data = await this.userSS.detailByToken(req.cookies.token);
+	return {
+		response: 202,
+		data:data
+	}
+  }
+  
+  @Get('test')
+  async tes(@Req() req, @Res({ passthrough:true }) res)
+  {
+	res.cookie('tokenBARU', "success");
+	return {
+		response:202,
+		message:"success"
+	}
+  }
+
 }
